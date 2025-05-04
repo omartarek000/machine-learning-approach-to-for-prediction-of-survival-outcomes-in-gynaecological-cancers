@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Prediction Details</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>Prediction Details</h1>
+    
+    <div class="summary-box">
+        <h3>Sample Information</h3>
+        <p><strong>Sample ID:</strong> {{ prediction.sample_id }}</p>
+        <p><strong>Row Number:</strong> {{ prediction.row_num }}</p>
+        
+        <h3>Prediction Results</h3>
+        <p><strong>Predicted Class:</strong> <span class="prediction-value">{{ prediction.predicted_class }}</span></p>
+        <p><strong>Confidence:</strong> {{ prediction.confidence }}</p>
+        
+        <h3>Class Probabilities</h3>
+        <ul class="probability-list">
+            {% for class_name, prob in prediction.probabilities.items() %}
+            <li>
+                <span class="class-name">{{ class_name }}:</span> 
+                <span class="prob-value">{{ prob }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('graph') }}" class="export-btn blue-btn">View Graphs</a>
+        <a href="{{ url_for('index') }}" class="back-link">Back to Results</a>
+    </div>
+</div>
+{% endblock %}

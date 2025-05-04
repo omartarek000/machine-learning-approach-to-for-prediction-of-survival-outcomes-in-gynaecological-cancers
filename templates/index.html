@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Cancer Prediction Model</title>
+<style>
+    .file-upload {
+        position: relative;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px dashed #e2e8f0;
+        border-radius: var(--border-radius);
+        background-color: #f8fafc;
+    }
+
+    .file-upload:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(37, 99, 235, 0.05);
+    }
+
+    .file-upload input[type="file"] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-upload-content {
+        text-align: center;
+        padding: 2rem;
+        width: 100%;
+    }
+
+    .file-upload-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .file-upload:hover .file-upload-icon {
+        transform: translateY(-5px);
+    }
+
+    .file-name {
+        margin-top: 1rem;
+        color: var(--primary-color);
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        background-color: rgba(37, 99, 235, 0.1);
+        border-radius: var(--border-radius);
+        display: inline-block;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .upload-instructions {
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-subtext {
+        color: #94a3b8;
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="card">
+    <h1>Upload Your Data</h1>
+    <p class="text-muted mb-4">Upload a CSV file containing the required features for prediction.</p>
+    
+    <form action="/" method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="file-upload mb-4">
+            <input type="file" id="csv_file" name="csv_file" accept=".csv" class="d-none">
+            <div class="file-upload-content">
+                <i class="fas fa-file-medical file-upload-icon"></i>
+                <p class="upload-instructions">Drag and drop your CSV file here</p>
+                <p class="upload-subtext">or click anywhere to browse</p>
+                <div id="fileName" class="file-name d-none"></div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100" id="submitBtn" disabled>
+            <i class="fas fa-stethoscope me-2"></i>
+            Get Prediction
+        </button>
+    </form>
+    
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('download_features') }}" class="download-link">
+            <i class="fas fa-download"></i>
+            Download Features Template
+        </a>
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileUpload = document.querySelector('.file-upload');
+        const fileInput = document.getElementById('csv_file');
+        const fileName = document.getElementById('fileName');
+        const uploadForm = document.getElementById('uploadForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Make the entire upload area clickable
+        fileUpload.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle file selection
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                fileName.textContent = e.target.files[0].name;
+                fileName.classList.remove('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Handle drag and drop
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = 'var(--primary-color)';
+            fileUpload.style.backgroundColor = 'rgba(37, 99, 235, 0.05)';
+        });
+
+        fileUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#e2e8f0';
+            fileUpload.style.backgroundColor = '#f8fafc';
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.style.borderColor = '#e2e8f0';
+            fileUpload.style.backgroundColor = '#f8fafc';
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = e.dataTransfer.files[0].name;
+                fileName.classList.remove('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Show loading overlay on form submit
+        uploadForm.addEventListener('submit', () => {
+            loadingOverlay.style.display = 'flex';
+        });
+    });
+</script>
+{% endblock %}
